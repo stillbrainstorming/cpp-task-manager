@@ -17,6 +17,8 @@ FetchContent_MakeAvailable(json)
 add_library(TaskManagerLib
     src/Task.cpp
     src/TaskManager.cpp
+    src/FileTaskRepository.cpp
+    src/TaskService.cpp
 )
 
 target_include_directories(TaskManagerLib PUBLIC 

@@ -1,6 +1,7 @@
-#include "TaskManager.h"
-#include <iostream>
+#include "FileTaskRepository.h"
+#include "TaskService.h"
 #include <fstream>
+#include <iostream>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -23,13 +24,28 @@ Config loadConfig(const std::string& path) {
     };
 }
 
+void listTasks(const TaskService& service) {
+    const auto& tasks = service.getTasks();
+    if (tasks.empty()) {
+        std::cout << "No tasks found.\n";
+        return;
+    }
+    for (size_t i = 0; i < tasks.size(); ++i) {
+        std::cout << i << ". "
+                  << (tasks[i].isCompleted() ? "[x] " : "[ ] ")
+                  << tasks[i].getTitle() << "\n";
+    }
+}
+
 int main(int argc, char* argv[]) {
     Config config = loadConfig("config.json");
-    
+
     std::cout << "--- " << config.app_name << " ---" << std::endl;
 
-    TaskManager manager(config.storage_path);
-    manager.load();
+    TaskManager manager;
+    FileTaskRepository repository(config.storage_path);
+    TaskService service(manager, repository);
+    service.load();
 
     if (argc < 2) {
         std::cout << "Usage:\n"
@@ -43,15 +59,15 @@ int main(int argc, char* argv[]) {
 
     try {
         if (command == "add" && argc >= 3) {
-            manager.addTask(argv[2]);
-            manager.save();
+            service.addTask(argv[2]);
+            service.save();
             std::cout << "Task added successfully.\n";
         } else if (command == "complete" && argc >= 3) {
-            manager.completeTask(std::stoul(argv[2]));
-            manager.save();
+            service.completeTask(std::stoul(argv[2]));
+            service.save();
             std::cout << "Task marked as complete.\n";
         } else if (command == "list") {
-            manager.listTasks();
+            listTasks(service);
         } else {
             std::cout << "Invalid command\n";
         }
