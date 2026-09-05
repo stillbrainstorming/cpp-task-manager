@@ -1,0 +1,22 @@
+# Build directories
+build/
+bin/
+lib/
+out/
+
+# IDE files
+.vscode/
+.vs/
+*.user
+*.suo
+*.sln
+
+# Doxygen generated docs
+docs/generated/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Data files (optional, but good for templates to keep samples)
+!data/tasks.txt

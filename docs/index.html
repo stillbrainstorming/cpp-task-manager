@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager Pro | C++ CLI App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Task Manager Pro</h1>
+        <p>A robust, library-based C++ CLI application for task management.</p>
+    </header>
+    
+    <main>
+        <section class="features">
+            <h2>Features</h2>
+            <ul>
+                <li><strong>Library Architecture:</strong> Core logic decoupled from CLI.</li>
+                <li><strong>JSON Config:</strong> Flexible settings via <code>config.json</code>.</li>
+                <li><strong>Cross-Platform:</strong> Works on Windows and Linux.</li>
+                <li><strong>CI/CD:</strong> Automated testing and documentation.</li>
+            </ul>
+        </section>
+
+        <section class="quick-start">
+            <h2>Quick Start</h2>
+            <pre><code>mkdir build
+cmake -S . -B build
+cmake --build build
+./build/task_app add "Hello World"
+./build/task_app list</code></pre>
+        </section>
+
+        <section class="docs-link">
+            <p>API Documentation can be generated using <code>cmake --build build --target docs</code>.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Task Manager Pro - Built with Modern C++</p>
+    </footer>
+</body>
+</html>
