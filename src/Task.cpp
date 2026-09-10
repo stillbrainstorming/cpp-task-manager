@@ -1,8 +1,13 @@
 #include "Task.h"
 #include <sstream>
+#include <stdexcept>
 
 Task::Task(const std::string& title, bool completed)
-    : title(title), completed(completed) {}
+    : title(title), completed(completed) {
+    if (title.find_first_not_of(" \t\n\r\f\v") == std::string::npos) {
+        throw std::invalid_argument("Task title cannot be empty");
+    }
+}
 
 void Task::markComplete() {
     completed = true;
@@ -15,7 +20,7 @@ std::string Task::serialize() const {
 Task Task::deserialize(const std::string& line) {
     size_t sep = line.find('|');
     if (sep == std::string::npos) return Task(line, false);
-    
+
     bool completed = line.substr(0, sep) == "1";
     std::string title = line.substr(sep + 1);
     return Task(title, completed);

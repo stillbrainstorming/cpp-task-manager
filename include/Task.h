@@ -3,9 +3,6 @@
 
 #include <string>
 
-/**
- * @brief Represents a single task in the system.
- */
 class Task {
 public:
     Task(const std::string& title, bool completed = false);
