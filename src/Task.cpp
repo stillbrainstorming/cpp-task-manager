@@ -19,9 +19,11 @@ std::string Task::serialize() const {
 
 Task Task::deserialize(const std::string& line) {
     size_t sep = line.find('|');
-    if (sep == std::string::npos) return Task(line, false);
+    if (sep == std::string::npos || sep != 1 || (line[0] != '0' && line[0] != '1')) {
+        throw std::invalid_argument("Malformed task record");
+    }
 
-    bool completed = line.substr(0, sep) == "1";
+    bool completed = line[0] == '1';
     std::string title = line.substr(sep + 1);
     return Task(title, completed);
 }
