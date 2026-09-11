@@ -3,6 +3,8 @@
 #include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
+#include <stdexcept>
+#include <string>
 
 using json = nlohmann::json;
 
@@ -37,6 +39,23 @@ void listTasks(const TaskService& service) {
     }
 }
 
+size_t parseTaskIndex(const std::string& value) {
+    size_t parsedCharacters = 0;
+    unsigned long index = 0;
+
+    try {
+        index = std::stoul(value, &parsedCharacters);
+    } catch (const std::exception&) {
+        throw std::invalid_argument("Task index must be a non-negative integer");
+    }
+
+    if (parsedCharacters != value.size()) {
+        throw std::invalid_argument("Task index must be a non-negative integer");
+    }
+
+    return static_cast<size_t>(index);
+}
+
 int main(int argc, char* argv[]) {
     Config config = loadConfig("config.json");
 
@@ -45,31 +64,38 @@ int main(int argc, char* argv[]) {
     TaskManager manager;
     FileTaskRepository repository(config.storage_path);
     TaskService service(manager, repository);
-    service.load();
-
-    if (argc < 2) {
-        std::cout << "Usage:\n"
-                  << "  add <task>\n"
-                  << "  complete <index>\n"
-                  << "  list\n";
-        return 0;
-    }
-
-    std::string command = argv[1];
 
     try {
-        if (command == "add" && argc >= 3) {
+        service.load();
+
+        if (argc < 2) {
+            std::cout << "Usage:\n"
+                      << "  add <task>\n"
+                      << "  complete <index>\n"
+                      << "  list\n";
+            return 1;
+        }
+
+        std::string command = argv[1];
+
+        if (command == "add") {
+            if (argc < 3 || std::string(argv[2]).empty()) {
+                throw std::invalid_argument("The add command requires a task title");
+            }
             service.addTask(argv[2]);
             service.save();
             std::cout << "Task added successfully.\n";
-        } else if (command == "complete" && argc >= 3) {
-            service.completeTask(std::stoul(argv[2]));
+        } else if (command == "complete") {
+            if (argc < 3) {
+                throw std::invalid_argument("The complete command requires a task index");
+            }
+            service.completeTask(parseTaskIndex(argv[2]));
             service.save();
             std::cout << "Task marked as complete.\n";
         } else if (command == "list") {
             listTasks(service);
         } else {
-            std::cout << "Invalid command\n";
+            throw std::invalid_argument("Unknown command: " + command);
         }
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << "\n";
