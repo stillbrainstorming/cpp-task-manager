@@ -13,6 +13,13 @@ void Task::markComplete() {
     completed = true;
 }
 
+void Task::updateTitle(const std::string& newTitle) {
+    if (newTitle.find_first_not_of(" \t\n\r\f\v") == std::string::npos) {
+        throw std::invalid_argument("Task title cannot be empty");
+    }
+    title = newTitle;
+}
+
 std::string Task::serialize() const {
     return (completed ? "1" : "0") + std::string("|") + title;
 }

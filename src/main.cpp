@@ -71,7 +71,9 @@ int main(int argc, char* argv[]) {
         if (argc < 2) {
             std::cout << "Usage:\n"
                       << "  add <task>\n"
+                      << "  update <index> <task>\n"
                       << "  complete <index>\n"
+                      << "  delete <index>\n"
                       << "  list\n";
             return 1;
         }
@@ -85,6 +87,13 @@ int main(int argc, char* argv[]) {
             service.addTask(argv[2]);
             service.save();
             std::cout << "Task added successfully.\n";
+        } else if (command == "update") {
+            if (argc < 4 || std::string(argv[3]).empty()) {
+                throw std::invalid_argument("The update command requires an index and task title");
+            }
+            service.updateTask(parseTaskIndex(argv[2]), argv[3]);
+            service.save();
+            std::cout << "Task updated successfully.\n";
         } else if (command == "complete") {
             if (argc < 3) {
                 throw std::invalid_argument("The complete command requires a task index");
@@ -92,6 +101,13 @@ int main(int argc, char* argv[]) {
             service.completeTask(parseTaskIndex(argv[2]));
             service.save();
             std::cout << "Task marked as complete.\n";
+        } else if (command == "delete") {
+            if (argc < 3) {
+                throw std::invalid_argument("The delete command requires a task index");
+            }
+            service.deleteTask(parseTaskIndex(argv[2]));
+            service.save();
+            std::cout << "Task deleted successfully.\n";
         } else if (command == "list") {
             listTasks(service);
         } else {

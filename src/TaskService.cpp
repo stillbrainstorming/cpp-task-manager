@@ -19,6 +19,14 @@ void TaskService::completeTask(size_t index) {
     manager.completeTask(index);
 }
 
+void TaskService::updateTask(size_t index, const std::string& title) {
+    manager.updateTask(index, title);
+}
+
+void TaskService::deleteTask(size_t index) {
+    manager.deleteTask(index);
+}
+
 const std::vector<Task>& TaskService::getTasks() const {
     return manager.getTasks();
 }

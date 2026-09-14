@@ -8,6 +8,7 @@ public:
     Task(const std::string& title, bool completed = false);
 
     void markComplete();
+    void updateTitle(const std::string& newTitle);
     std::string serialize() const;
     static Task deserialize(const std::string& line);
 
