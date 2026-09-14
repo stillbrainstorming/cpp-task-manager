@@ -36,6 +36,10 @@ add_executable(test_persistence tests/test_persistence.cpp)
 target_link_libraries(test_persistence PRIVATE TaskManagerLib)
 add_test(NAME PersistenceTest COMMAND test_persistence)
 
+add_executable(test_lifecycle tests/test_lifecycle.cpp)
+target_link_libraries(test_lifecycle PRIVATE TaskManagerLib)
+add_test(NAME LifecycleTest COMMAND test_lifecycle)
+
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
     set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)

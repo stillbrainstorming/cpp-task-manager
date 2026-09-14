@@ -11,6 +11,8 @@ public:
 
     void addTask(const std::string& title);
     void completeTask(size_t index);
+    void updateTask(size_t index, const std::string& title);
+    void deleteTask(size_t index);
     void replaceTasks(std::vector<Task> newTasks);
     const std::vector<Task>& getTasks() const;
 
