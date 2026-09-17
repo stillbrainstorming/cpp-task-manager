@@ -9,6 +9,7 @@ void testTaskCreation() {
     assert(t.getTitle() == "Test Task");
     assert(!t.isCompleted());
     assert(t.getPriority() == TaskPriority::Medium);
+    assert(t.getDueDate().empty());
     std::cout << "testTaskCreation passed!\n";
 }
 
@@ -20,14 +21,15 @@ void testTaskCompletion() {
 }
 
 void testSerialization() {
-    Task t("Serialize", true, TaskPriority::High);
+    Task t("Serialize", true, TaskPriority::High, "2026-12-31");
     std::string s = t.serialize();
-    assert(s == "1|H|Serialize");
+    assert(s == "1|H|2026-12-31|Serialize");
 
     Task t2 = Task::deserialize(s);
     assert(t2.getTitle() == "Serialize");
     assert(t2.isCompleted());
     assert(t2.getPriority() == TaskPriority::High);
+    assert(t2.getDueDate() == "2026-12-31");
     std::cout << "testSerialization passed!\n";
 }
 
@@ -36,6 +38,11 @@ void testLegacySerialization() {
     assert(t.getTitle() == "Legacy Task");
     assert(!t.isCompleted());
     assert(t.getPriority() == TaskPriority::Medium);
+    assert(t.getDueDate().empty());
+
+    Task t2 = Task::deserialize("0|H|Legacy Priority Task");
+    assert(t2.getPriority() == TaskPriority::High);
+    assert(t2.getDueDate().empty());
     std::cout << "testLegacySerialization passed!\n";
 }
 
@@ -48,6 +55,17 @@ void testEmptyTitleRejected() {
     }
     assert(rejected);
     std::cout << "testEmptyTitleRejected passed!\n";
+}
+
+void testInvalidDueDateRejected() {
+    bool rejected = false;
+    try {
+        Task t("Invalid Date", false, TaskPriority::Medium, "2026-02-30");
+    } catch (const std::invalid_argument&) {
+        rejected = true;
+    }
+    assert(rejected);
+    std::cout << "testInvalidDueDateRejected passed!\n";
 }
 
 void testInvalidCompletionIndexRejected() {
@@ -78,12 +96,27 @@ void testPriorityFiltering() {
     std::cout << "testPriorityFiltering passed!\n";
 }
 
+void testOverdueFiltering() {
+    TaskManager manager;
+    manager.addTask("Overdue", TaskPriority::Medium, "2026-09-01");
+    manager.addTask("Today", TaskPriority::Medium, "2026-09-17");
+    manager.addTask("Future", TaskPriority::Medium, "2026-10-01");
+    manager.addTask("Completed", TaskPriority::Medium, "2026-09-01");
+    manager.completeTask(3);
+
+    const auto filtered = manager.filterOverdue("2026-09-17");
+    assert(filtered.size() == 1);
+    assert(filtered[0].getTitle() == "Overdue");
+    std::cout << "testOverdueFiltering passed!\n";
+}
+
 void testPriorityUpdate() {
     TaskManager manager;
-    manager.addTask("Task", TaskPriority::Low);
-    manager.updateTask(0, "Updated", TaskPriority::High);
+    manager.addTask("Task", TaskPriority::Low, "2026-09-20");
+    manager.updateTask(0, "Updated", TaskPriority::High, "2026-09-30");
     assert(manager.getTasks().at(0).getPriority() == TaskPriority::High);
     assert(manager.getTasks().at(0).getTitle() == "Updated");
+    assert(manager.getTasks().at(0).getDueDate() == "2026-09-30");
     std::cout << "testPriorityUpdate passed!\n";
 }
 
@@ -93,8 +126,10 @@ int main() {
     testSerialization();
     testLegacySerialization();
     testEmptyTitleRejected();
+    testInvalidDueDateRejected();
     testInvalidCompletionIndexRejected();
     testPriorityFiltering();
+    testOverdueFiltering();
     testPriorityUpdate();
     std::cout << "All tests passed successfully!\n";
     return 0;
