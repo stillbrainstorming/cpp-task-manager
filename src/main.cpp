@@ -33,6 +33,12 @@ TaskPriority parsePriority(const std::string& value) {
     throw std::invalid_argument("Priority must be low, medium, or high");
 }
 
+std::string parseDueDate(const std::string& value) {
+    if (value == "none") return "";
+    Task validationTask("date validation", false, TaskPriority::Medium, value);
+    return validationTask.getDueDate();
+}
+
 std::string priorityLabel(TaskPriority priority) {
     switch (priority) {
     case TaskPriority::Low: return "low";
@@ -51,7 +57,11 @@ void listTasks(const std::vector<Task>& tasks) {
         std::cout << i << ". "
                   << (tasks[i].isCompleted() ? "[x] " : "[ ] ")
                   << "[" << priorityLabel(tasks[i].getPriority()) << "] "
-                  << tasks[i].getTitle() << "\n";
+                  << tasks[i].getTitle();
+        if (!tasks[i].getDueDate().empty()) {
+            std::cout << " (due " << tasks[i].getDueDate() << ")";
+        }
+        std::cout << "\n";
     }
 }
 
@@ -86,11 +96,12 @@ int main(int argc, char* argv[]) {
 
         if (argc < 2) {
             std::cout << "Usage:\n"
-                      << "  add <task> [low|medium|high]\n"
-                      << "  update <index> <task> [low|medium|high]\n"
+                      << "  add <task> [low|medium|high] [YYYY-MM-DD|none]\n"
+                      << "  update <index> <task> [low|medium|high] [YYYY-MM-DD|none]\n"
                       << "  complete <index>\n"
                       << "  delete <index>\n"
-                      << "  list [low|medium|high]\n";
+                      << "  list [low|medium|high]\n"
+                      << "  overdue <YYYY-MM-DD>\n";
             return 1;
         }
 
@@ -101,15 +112,18 @@ int main(int argc, char* argv[]) {
                 throw std::invalid_argument("The add command requires a task title");
             }
             TaskPriority priority = argc >= 4 ? parsePriority(argv[3]) : TaskPriority::Medium;
-            service.addTask(argv[2], priority);
+            std::string dueDate = argc >= 5 ? parseDueDate(argv[4]) : "";
+            service.addTask(argv[2], priority, dueDate);
             service.save();
             std::cout << "Task added successfully.\n";
         } else if (command == "update") {
             if (argc < 4 || std::string(argv[3]).empty()) {
                 throw std::invalid_argument("The update command requires an index and task title");
             }
-            TaskPriority priority = argc >= 5 ? parsePriority(argv[4]) : service.getTasks().at(parseTaskIndex(argv[2])).getPriority();
-            service.updateTask(parseTaskIndex(argv[2]), argv[3], priority);
+            size_t index = parseTaskIndex(argv[2]);
+            TaskPriority priority = argc >= 5 ? parsePriority(argv[4]) : service.getTasks().at(index).getPriority();
+            std::string dueDate = argc >= 6 ? parseDueDate(argv[5]) : service.getTasks().at(index).getDueDate();
+            service.updateTask(index, argv[3], priority, dueDate);
             service.save();
             std::cout << "Task updated successfully.\n";
         } else if (command == "complete") {
@@ -132,6 +146,15 @@ int main(int argc, char* argv[]) {
             } else {
                 listTasks(service.getTasks());
             }
+        } else if (command == "overdue") {
+            if (argc < 3) {
+                throw std::invalid_argument("The overdue command requires a reference date");
+            }
+            std::string referenceDate = parseDueDate(argv[2]);
+            if (referenceDate.empty()) {
+                throw std::invalid_argument("The overdue command requires a valid reference date");
+            }
+            listTasks(service.filterOverdue(referenceDate));
         } else {
             throw std::invalid_argument("Unknown command: " + command);
         }
