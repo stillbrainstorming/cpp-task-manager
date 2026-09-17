@@ -26,8 +26,23 @@ Config loadConfig(const std::string& path) {
     };
 }
 
-void listTasks(const TaskService& service) {
-    const auto& tasks = service.getTasks();
+TaskPriority parsePriority(const std::string& value) {
+    if (value == "low") return TaskPriority::Low;
+    if (value == "medium") return TaskPriority::Medium;
+    if (value == "high") return TaskPriority::High;
+    throw std::invalid_argument("Priority must be low, medium, or high");
+}
+
+std::string priorityLabel(TaskPriority priority) {
+    switch (priority) {
+    case TaskPriority::Low: return "low";
+    case TaskPriority::Medium: return "medium";
+    case TaskPriority::High: return "high";
+    }
+    throw std::invalid_argument("Invalid task priority");
+}
+
+void listTasks(const std::vector<Task>& tasks) {
     if (tasks.empty()) {
         std::cout << "No tasks found.\n";
         return;
@@ -35,6 +50,7 @@ void listTasks(const TaskService& service) {
     for (size_t i = 0; i < tasks.size(); ++i) {
         std::cout << i << ". "
                   << (tasks[i].isCompleted() ? "[x] " : "[ ] ")
+                  << "[" << priorityLabel(tasks[i].getPriority()) << "] "
                   << tasks[i].getTitle() << "\n";
     }
 }
@@ -70,11 +86,11 @@ int main(int argc, char* argv[]) {
 
         if (argc < 2) {
             std::cout << "Usage:\n"
-                      << "  add <task>\n"
-                      << "  update <index> <task>\n"
+                      << "  add <task> [low|medium|high]\n"
+                      << "  update <index> <task> [low|medium|high]\n"
                       << "  complete <index>\n"
                       << "  delete <index>\n"
-                      << "  list\n";
+                      << "  list [low|medium|high]\n";
             return 1;
         }
 
@@ -84,14 +100,16 @@ int main(int argc, char* argv[]) {
             if (argc < 3 || std::string(argv[2]).empty()) {
                 throw std::invalid_argument("The add command requires a task title");
             }
-            service.addTask(argv[2]);
+            TaskPriority priority = argc >= 4 ? parsePriority(argv[3]) : TaskPriority::Medium;
+            service.addTask(argv[2], priority);
             service.save();
             std::cout << "Task added successfully.\n";
         } else if (command == "update") {
             if (argc < 4 || std::string(argv[3]).empty()) {
                 throw std::invalid_argument("The update command requires an index and task title");
             }
-            service.updateTask(parseTaskIndex(argv[2]), argv[3]);
+            TaskPriority priority = argc >= 5 ? parsePriority(argv[4]) : service.getTasks().at(parseTaskIndex(argv[2])).getPriority();
+            service.updateTask(parseTaskIndex(argv[2]), argv[3], priority);
             service.save();
             std::cout << "Task updated successfully.\n";
         } else if (command == "complete") {
@@ -109,7 +127,11 @@ int main(int argc, char* argv[]) {
             service.save();
             std::cout << "Task deleted successfully.\n";
         } else if (command == "list") {
-            listTasks(service);
+            if (argc >= 3) {
+                listTasks(service.filterByPriority(parsePriority(argv[2])));
+            } else {
+                listTasks(service.getTasks());
+            }
         } else {
             throw std::invalid_argument("Unknown command: " + command);
         }
