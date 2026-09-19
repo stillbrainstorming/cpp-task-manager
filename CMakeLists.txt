@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
 project(TaskManagerApp VERSION 1.0.0 LANGUAGES CXX)
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -40,12 +39,15 @@ add_executable(test_lifecycle tests/test_lifecycle.cpp)
 target_link_libraries(test_lifecycle PRIVATE TaskManagerLib)
 add_test(NAME LifecycleTest COMMAND test_lifecycle)
 
+add_executable(test_service tests/test_service.cpp)
+target_link_libraries(test_service PRIVATE TaskManagerLib)
+add_test(NAME ServiceTest COMMAND test_service)
+
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
     set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)
     set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
     configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
-
     add_custom_target(docs
         COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}

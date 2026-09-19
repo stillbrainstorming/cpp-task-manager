@@ -23,35 +23,19 @@ A professional, library-based C++ Task Manager application. This project is stru
 ### Compilation
 
 ```bash
-# Create build directory
 cmake -S . -B build
-
-# Build the project
 cmake --build build
 ```
 
 ### Usage
 
 ```bash
-# Add a task with priority and due date
 ./build/task_app add "Prepare release" high 2026-10-01
-
-# List tasks
 ./build/task_app list
-
-# Filter by priority
 ./build/task_app list high
-
-# Mark a task as complete
 ./build/task_app complete 0
-
-# Update title, priority, and due date
 ./build/task_app update 0 "Prepare production release" high 2026-10-05
-
-# Clear a due date with `none`
 ./build/task_app update 0 "Prepare production release" high none
-
-# Show overdue tasks for a reference date
 ./build/task_app overdue 2026-10-06
 ```
 
@@ -63,6 +47,8 @@ Legacy task records remain readable. New records include the optional due date w
 cd build
 ctest --output-on-failure
 ```
+
+The test suite covers task construction and serialization, lifecycle and persistence boundaries, priority and overdue filtering, and service-level orchestration including invalid-operation behavior.
 
 ## Documentation
 
