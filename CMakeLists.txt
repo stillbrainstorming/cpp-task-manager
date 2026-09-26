@@ -47,6 +47,10 @@ add_executable(test_cli tests/test_cli.cpp)
 target_link_libraries(test_cli PRIVATE TaskManagerLib nlohmann_json::nlohmann_json)
 add_test(NAME CliContractTest COMMAND test_cli)
 
+add_executable(test_config tests/test_config.cpp)
+target_link_libraries(test_config PRIVATE TaskManagerLib nlohmann_json::nlohmann_json)
+add_test(NAME ConfigTest COMMAND test_config)
+
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
     set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)

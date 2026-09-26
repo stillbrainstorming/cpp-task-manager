@@ -13,17 +13,45 @@ struct Config {
     std::string app_name;
 };
 
+bool hasText(const std::string& value) {
+    return value.find_first_not_of(" \t\r\n") != std::string::npos;
+}
+
 Config loadConfig(const std::string& path) {
+    const Config defaults{"data/tasks.txt", "Task Manager"};
     std::ifstream file(path);
     if (!file.is_open()) {
-        return {"data/tasks.txt", "Task Manager"};
+        return defaults;
     }
-    json j;
-    file >> j;
-    return {
-        j.value("storage_path", "data/tasks.txt"),
-        j.value("app_name", "Task Manager")
-    };
+
+    try {
+        json j;
+        file >> j;
+        if (!j.is_object()) {
+            return defaults;
+        }
+
+        Config config = defaults;
+        const auto storagePath = j.find("storage_path");
+        if (storagePath != j.end() && storagePath->is_string()) {
+            const std::string value = storagePath->get<std::string>();
+            if (hasText(value)) {
+                config.storage_path = value;
+            }
+        }
+
+        const auto appName = j.find("app_name");
+        if (appName != j.end() && appName->is_string()) {
+            const std::string value = appName->get<std::string>();
+            if (hasText(value)) {
+                config.app_name = value;
+            }
+        }
+
+        return config;
+    } catch (const std::exception&) {
+        return defaults;
+    }
 }
 
 TaskPriority parsePriority(const std::string& value) {
